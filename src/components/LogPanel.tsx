@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useLogs } from '@/hooks/useApi';
 import { ChevronDown, ChevronUp, Download, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function LogPanel() {
   const [expanded, setExpanded] = useState(false);
-  const logs = useInventoryStore((s) => s.logs);
+  const { data: logs = [] } = useLogs();
   const displayLogs = expanded ? logs.slice(0, 20) : logs.slice(0, 3);
 
   const levelColors: Record<string, string> = {
@@ -22,7 +22,7 @@ export function LogPanel() {
 
   const handleDownload = () => {
     const content = logs
-      .map((l) => `[${l.timestamp}] [${l.level}] ${l.message}`)
+      .map((l) => `[${l.time}] [${l.level}] ${l.message}`)
       .join('\n');
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -69,7 +69,7 @@ export function LogPanel() {
           >
             <span className={`font-bold shrink-0 w-16 ${levelColors[log.level]}`}>{log.level}</span>
             <span className="text-muted-foreground shrink-0">
-              {format(new Date(log.timestamp), 'HH:mm:ss')}
+              {format(new Date(log.time), 'HH:mm:ss')}
             </span>
             <span className="text-foreground">{log.message}</span>
           </div>

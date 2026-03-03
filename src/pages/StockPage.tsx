@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useProducts, useImportStock, useExportStock } from '@/hooks/useApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +13,9 @@ interface StockFormProps {
 }
 
 export default function StockPage({ type }: StockFormProps) {
-  const { products, importStock, exportStock } = useInventoryStore();
+  const { data: products = [] } = useProducts();
+  const importMutation = useImportStock();
+  const exportMutation = useExportStock();
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [note, setNote] = useState('');
@@ -23,8 +25,9 @@ export default function StockPage({ type }: StockFormProps) {
   const isImport = type === 'import';
   const title = isImport ? 'Nhập kho' : 'Xuất kho';
   const Icon = isImport ? ArrowDownToLine : ArrowUpFromLine;
+  const isPending = importMutation.isPending || exportMutation.isPending;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const qty = Number(quantity);
     if (!productId || qty <= 0) {
@@ -32,21 +35,20 @@ export default function StockPage({ type }: StockFormProps) {
       return;
     }
 
-    if (isImport) {
-      importStock(productId, qty, note);
-      toast({ title: 'Thành công', description: `Đã nhập ${qty} sản phẩm vào kho` });
-    } else {
-      const result = exportStock(productId, qty, note);
-      if (!result.success) {
-        setErrorModal(result.error || 'Lỗi không xác định');
-        return;
+    try {
+      if (isImport) {
+        await importMutation.mutateAsync({ productId, quantity: qty, note });
+        toast({ title: 'Thành công', description: `Đã nhập ${qty} sản phẩm vào kho` });
+      } else {
+        await exportMutation.mutateAsync({ productId, quantity: qty, note });
+        toast({ title: 'Thành công', description: `Đã xuất ${qty} sản phẩm khỏi kho` });
       }
-      toast({ title: 'Thành công', description: `Đã xuất ${qty} sản phẩm khỏi kho` });
+      setProductId('');
+      setQuantity('');
+      setNote('');
+    } catch (err: any) {
+      setErrorModal(err.message || 'Lỗi không xác định');
     }
-
-    setProductId('');
-    setQuantity('');
-    setNote('');
   };
 
   return (
@@ -67,7 +69,7 @@ export default function StockPage({ type }: StockFormProps) {
               <SelectContent>
                 {products.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.code} - {p.name} (Tồn: {p.quantity})
+                    {p.code} - {p.name} (Tồn: {p.stock})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -76,28 +78,17 @@ export default function StockPage({ type }: StockFormProps) {
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Số lượng</label>
-            <Input
-              type="number"
-              min={1}
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Nhập số lượng"
-            />
+            <Input type="number" min={1} value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="Nhập số lượng" />
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Ghi chú</label>
-            <Textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Ghi chú (tùy chọn)"
-              rows={3}
-            />
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ghi chú (tùy chọn)" rows={3} />
           </div>
 
-          <Button type="submit" className="w-full gap-2">
+          <Button type="submit" className="w-full gap-2" disabled={isPending}>
             <Icon className="h-4 w-4" />
-            Xác nhận {title.toLowerCase()}
+            {isPending ? 'Đang xử lý...' : `Xác nhận ${title.toLowerCase()}`}
           </Button>
         </form>
       </div>
@@ -105,19 +96,13 @@ export default function StockPage({ type }: StockFormProps) {
       <Dialog open={!!errorModal} onOpenChange={() => setErrorModal(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-destructive flex items-center gap-2">
-              ⚠️ Lỗi xuất kho
-            </DialogTitle>
+            <DialogTitle className="text-destructive flex items-center gap-2">⚠️ Lỗi xuất kho</DialogTitle>
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm text-foreground">{errorModal}</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Vui lòng kiểm tra lại số lượng tồn kho trước khi thực hiện xuất.
-            </p>
+            <p className="text-xs text-muted-foreground mt-2">Vui lòng kiểm tra lại số lượng tồn kho trước khi thực hiện xuất.</p>
           </div>
-          <Button variant="destructive" onClick={() => setErrorModal(null)} className="w-full">
-            Đóng
-          </Button>
+          <Button variant="destructive" onClick={() => setErrorModal(null)} className="w-full">Đóng</Button>
         </DialogContent>
       </Dialog>
     </div>
