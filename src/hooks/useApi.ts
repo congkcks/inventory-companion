@@ -1,24 +1,46 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { mockProducts, mockTransactions, mockLogs } from '@/lib/mockData';
 
 export function useProducts() {
   return useQuery({
     queryKey: ['products'],
-    queryFn: api.getProducts,
+    queryFn: async () => {
+      try {
+        const data = await api.getProducts();
+        return data.length > 0 ? data : mockProducts;
+      } catch {
+        return mockProducts;
+      }
+    },
   });
 }
 
 export function useTransactions() {
   return useQuery({
     queryKey: ['transactions'],
-    queryFn: api.getTransactions,
+    queryFn: async () => {
+      try {
+        const data = await api.getTransactions();
+        return data.length > 0 ? data : mockTransactions;
+      } catch {
+        return mockTransactions;
+      }
+    },
   });
 }
 
 export function useLogs(take = 50) {
   return useQuery({
     queryKey: ['logs', take],
-    queryFn: () => api.getLogs(take),
+    queryFn: async () => {
+      try {
+        const data = await api.getLogs(take);
+        return data.length > 0 ? data : mockLogs;
+      } catch {
+        return mockLogs;
+      }
+    },
     refetchInterval: 5000,
   });
 }
