@@ -1,9 +1,16 @@
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useTransactions, useProducts } from '@/hooks/useApi';
 import { format } from 'date-fns';
 import { ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
 
 export default function HistoryPage() {
-  const transactions = useInventoryStore((s) => s.transactions);
+  const { data: transactions = [], isLoading } = useTransactions();
+  const { data: products = [] } = useProducts();
+
+  const productMap = new Map(products.map((p) => [p.id, p.name]));
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải dữ liệu...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -24,10 +31,10 @@ export default function HistoryPage() {
             {transactions.map((t) => (
               <tr key={t.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                 <td className="px-4 py-3 text-muted-foreground">
-                  {format(new Date(t.date), 'dd/MM/yyyy HH:mm')}
+                  {format(new Date(t.time), 'dd/MM/yyyy HH:mm')}
                 </td>
                 <td className="px-4 py-3">
-                  {t.type === 'import' ? (
+                  {t.type === 1 ? (
                     <span className="inline-flex items-center gap-1 text-primary font-medium">
                       <ArrowDownToLine className="h-3.5 w-3.5" /> Nhập
                     </span>
@@ -37,7 +44,9 @@ export default function HistoryPage() {
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-medium text-card-foreground">{t.productName}</td>
+                <td className="px-4 py-3 font-medium text-card-foreground">
+                  {productMap.get(t.productID) || t.productID}
+                </td>
                 <td className="px-4 py-3 text-right font-semibold">{t.quantity}</td>
                 <td className="px-4 py-3 text-muted-foreground">{t.note || '—'}</td>
               </tr>
