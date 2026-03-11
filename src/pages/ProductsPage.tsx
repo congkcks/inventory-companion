@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import { useProducts } from '@/hooks/useApi';
-import { Search } from 'lucide-react';
+import { useProducts, useCreateProduct } from '@/hooks/useApi';
+import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
   const { data: products = [], isLoading } = useProducts();
+  const createProduct = useCreateProduct();
   const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
 
   const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -18,6 +26,27 @@ export default function ProductsPage() {
     'Hết hàng': 'bg-destructive/15 text-destructive',
   };
 
+  const handleCreate = () => {
+    if (!code.trim() || !name.trim()) {
+      toast.error('Vui lòng nhập đầy đủ mã và tên sản phẩm');
+      return;
+    }
+    createProduct.mutate(
+      { code: code.trim(), name: name.trim() },
+      {
+        onSuccess: () => {
+          toast.success('Thêm sản phẩm thành công');
+          setCode('');
+          setName('');
+          setOpen(false);
+        },
+        onError: (err) => {
+          toast.error(err.message || 'Thêm sản phẩm thất bại');
+        },
+      }
+    );
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Đang tải dữ liệu...</div>;
   }
@@ -26,6 +55,46 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Quản lý sản phẩm</h1>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Thêm sản phẩm
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Thêm sản phẩm mới</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="product-code">Mã sản phẩm</Label>
+                <Input
+                  id="product-code"
+                  placeholder="VD: SP011"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="product-name">Tên sản phẩm</Label>
+                <Input
+                  id="product-name"
+                  placeholder="VD: Laptop Dell XPS 13"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <Button
+                className="w-full"
+                onClick={handleCreate}
+                disabled={createProduct.isPending}
+              >
+                {createProduct.isPending ? 'Đang tạo...' : 'Tạo sản phẩm'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="relative max-w-sm">
