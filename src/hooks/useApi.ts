@@ -16,6 +16,17 @@ export function useProducts() {
   });
 }
 
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, name }: { code: string; name: string }) =>
+      api.createProduct(code, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
 export function useTransactions() {
   return useQuery({
     queryKey: ['transactions'],
