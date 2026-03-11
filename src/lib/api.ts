@@ -37,25 +37,35 @@ export interface ApiLog {
 
 export const api = {
   async getProducts(): Promise<ApiProduct[]> {
-    const res = await fetch(`${BASE_URL}/Products`);
+    const res = await fetchWithTimeout(`${BASE_URL}/Products`);
     if (!res.ok) throw new Error('Failed to fetch products');
     return res.json();
   },
 
+  async createProduct(code: string, name: string): Promise<ApiProduct> {
+    const res = await fetchWithTimeout(`${BASE_URL}/Products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, name }),
+    });
+    if (!res.ok) throw new Error('Failed to create product');
+    return res.json();
+  },
+
   async getTransactions(): Promise<ApiTransaction[]> {
-    const res = await fetch(`${BASE_URL}/Products/transactions`);
+    const res = await fetchWithTimeout(`${BASE_URL}/Products/transactions`);
     if (!res.ok) throw new Error('Failed to fetch transactions');
     return res.json();
   },
 
   async getLogs(take = 50): Promise<ApiLog[]> {
-    const res = await fetch(`${BASE_URL}/Logs?take=${take}`);
+    const res = await fetchWithTimeout(`${BASE_URL}/Logs?take=${take}`);
     if (!res.ok) throw new Error('Failed to fetch logs');
     return res.json();
   },
 
   async importStock(productId: string, quantity: number, note: string): Promise<string> {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${BASE_URL}/Products/${productId}/import?quantity=${quantity}&note=${encodeURIComponent(note)}`,
       { method: 'POST' }
     );
@@ -64,7 +74,7 @@ export const api = {
   },
 
   async exportStock(productId: string, quantity: number, note: string): Promise<string> {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${BASE_URL}/Products/${productId}/export?quantity=${quantity}&note=${encodeURIComponent(note)}`,
       { method: 'POST' }
     );
