@@ -1,4 +1,14 @@
 const BASE_URL = 'https://starterkitnet.onrender.com/api';
+const TIMEOUT_MS = 6000;
+
+function fetchWithTimeout(url: string, options?: RequestInit): Promise<Response> {
+  return Promise.race([
+    fetch(url, options),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS)
+    ),
+  ]);
+}
 
 export interface ApiProduct {
   id: string;
