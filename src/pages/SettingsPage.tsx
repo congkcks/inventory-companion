@@ -17,7 +17,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-muted-foreground">Tên hệ thống</span>
-            <span className="font-medium text-card-foreground">KhoViet</span>
+            <span className="font-medium text-card-foreground"><span className="font-medium text-card-foreground">KhoUTC</span></span>
           </div>
           <div className="flex justify-between py-2">
             <span className="text-muted-foreground">Ngày triển khai</span>

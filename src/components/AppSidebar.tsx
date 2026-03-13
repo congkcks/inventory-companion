@@ -23,7 +23,7 @@ export function AppSidebar() {
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar text-sidebar-foreground flex flex-col">
       <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
         <Warehouse className="h-7 w-7 text-sidebar-primary" />
-        <span className="text-lg font-bold tracking-tight">KhoViet</span>
+        <span className="text-lg font-bold tracking-tight">KhoUTC</span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
@@ -42,7 +42,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="px-6 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/50">© 2026 KhoViet v1.0</p>
+        <p className="text-xs text-sidebar-foreground/50"><p className="text-xs text-sidebar-foreground/50">© 2026 KhoUTC v1.0</p></p>
       </div>
     </aside>
   );
