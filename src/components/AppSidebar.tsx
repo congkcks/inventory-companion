@@ -42,7 +42,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="px-6 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/50">© 2026 KhoViet v1.0</p>
+        <p className="text-xs text-sidebar-foreground/50"><p className="text-xs text-sidebar-foreground/50">© 2026 KhoUTC v1.0</p></p>
       </div>
     </aside>
   );
