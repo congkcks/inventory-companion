@@ -23,7 +23,7 @@ export function AppSidebar() {
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar text-sidebar-foreground flex flex-col">
       <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
         <Warehouse className="h-7 w-7 text-sidebar-primary" />
-        <span className="text-lg font-bold tracking-tight">KhoViet</span>
+        <span className="text-lg font-bold tracking-tight">KhoUTC</span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
